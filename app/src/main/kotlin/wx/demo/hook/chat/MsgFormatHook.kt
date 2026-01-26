@@ -7,7 +7,7 @@ import android.text.style.ClickableSpan
 import android.view.LayoutInflater
 import android.view.View
 import me.hd.wauxv.data.config.DefaultData
-import me.hd.wauxv.data.config.DescriptorData
+import me.hd.wauxv.data.config.DexDescData
 import me.hd.wauxv.databinding.ModuleDialogMsgFormatBinding
 import me.hd.wauxv.factory.showDialog
 import me.hd.wauxv.factory.toDateStr
@@ -17,14 +17,12 @@ import me.hd.wauxv.hook.base.SwitchHook
 import me.hd.wauxv.hook.core.dex.IDexFind
 import me.hd.wauxv.hook.factory.findDexClassMethod
 import me.hd.wauxv.hook.factory.toDexConstructor
-import org.lsposed.lsparanoid.Obfuscate
 import org.luckypray.dexkit.DexKitBridge
 
-@Obfuscate
 @HookAnno
 @ViewAnno
 object MsgFormatHook : SwitchHook("MsgFormatHook"), IDexFind {
-    private object ConstructorSendTextComponent : DescriptorData("MsgFormatHook.ConstructorSendTextComponent")
+    private object ConstructorSendTextComponent : DexDescData("MsgFormatHook.ConstructorSendTextComponent")
     private object ValTextFormat : DefaultData("MsgFormatHook.ValTextFormat", stringDefVal = TEXT_FORMAT_DEF_VAL)
     private object ValTimeFormat : DefaultData("MsgFormatHook.ValTimeFormat", stringDefVal = TIME_FORMAT_DEF_VAL)
 
@@ -97,6 +95,7 @@ object MsgFormatHook : SwitchHook("MsgFormatHook"), IDexFind {
     override fun dexFind(dexKit: DexKitBridge) {
         ConstructorSendTextComponent.findDexClassMethod(dexKit) {
             onClass {
+                searchPackages("com.tencent.mm.ui.chatting.component")
                 matcher {
                     usingEqStrings("MicroMsg.ChattingUI.SendTextComponent", "doSendMessage begin send txt msg")
                 }

@@ -2,12 +2,9 @@ package wx.demo.hook.helper
 
 import android.view.LayoutInflater
 import android.view.View
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.type.java.IntType
+import com.highcapable.kavaref.KavaRef.Companion.asResolver
 import me.hd.wauxv.data.config.DefaultData
-import me.hd.wauxv.data.config.DescriptorData
-import me.hd.wauxv.data.factory.HostInfo
-import me.hd.wauxv.data.factory.WxVersion
+import me.hd.wauxv.data.config.DexDescData
 import me.hd.wauxv.databinding.ModuleDialogVoiceLengthBinding
 import me.hd.wauxv.factory.showDialog
 import me.hd.wauxv.hook.anno.HookAnno
@@ -16,14 +13,12 @@ import me.hd.wauxv.hook.base.SwitchHook
 import me.hd.wauxv.hook.core.dex.IDexFind
 import me.hd.wauxv.hook.factory.findDexClassMethod
 import me.hd.wauxv.hook.factory.toDexMethod
-import org.lsposed.lsparanoid.Obfuscate
 import org.luckypray.dexkit.DexKitBridge
 
-@Obfuscate
 @HookAnno
 @ViewAnno
 object VoiceLengthHook : SwitchHook("VoiceLengthHook"), IDexFind {
-    private object MethodSetVoice : DescriptorData("VoiceLengthHook.MethodSetVoice")
+    private object MethodSetVoice : DexDescData("VoiceLengthHook.MethodSetVoice")
     private object ValVoiceLength : DefaultData("VoiceLengthHook.ValVoiceLength", intDefVal = 1)
 
     override val location = "辅助"
@@ -41,7 +36,6 @@ object VoiceLengthHook : SwitchHook("VoiceLengthHook"), IDexFind {
             negativeButton()
         }
     }
-    override val isAvailable = HostInfo.verCode > WxVersion.V8_0_30.code
 
     override fun initOnce() {
         MethodSetVoice.toDexMethod {
@@ -53,11 +47,10 @@ object VoiceLengthHook : SwitchHook("VoiceLengthHook"), IDexFind {
                         else -> return@beforeIfEnabled
                     }
                     val obj = args(objIndex).any()!!
-                    val voiceLengthFieldName = "l"
-                    obj::class.java.field {
-                        name = voiceLengthFieldName
-                        type = IntType
-                    }.get(obj).set(ValVoiceLength.intVal * 1000)
+                    obj.asResolver().firstField {
+                        name = "l"
+                        type = Int::class
+                    }.set(ValVoiceLength.intVal * 1000)
                 }
             }
         }

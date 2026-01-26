@@ -13,12 +13,10 @@ import android.widget.LinearLayout
 import android.widget.RadioGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
-import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.android.IntentClass
-import com.highcapable.yukihookapi.hook.type.java.IntType
-import com.highcapable.yukihookapi.hook.type.java.StringClass
+import com.highcapable.kavaref.KavaRef.Companion.asResolver
+import com.highcapable.kavaref.KavaRef.Companion.resolve
 import me.hd.wauxv.data.config.DefaultData
-import me.hd.wauxv.data.config.DescriptorData
+import me.hd.wauxv.data.config.DexDescData
 import me.hd.wauxv.data.factory.WxProcess
 import me.hd.wauxv.databinding.ModuleDialogLocationBinding
 import me.hd.wauxv.factory.showDialog
@@ -29,17 +27,15 @@ import me.hd.wauxv.hook.core.dex.IDexFind
 import me.hd.wauxv.hook.factory.findDexClassMethod
 import me.hd.wauxv.hook.factory.toDexMethod
 import me.hd.wauxv.hook.factory.toLazyAppClass
-import org.lsposed.lsparanoid.Obfuscate
 import org.luckypray.dexkit.DexKitBridge
 
-@Obfuscate
 @HookAnno
 @ViewAnno
 object LocationHook : SwitchHook("LocationHook"), IDexFind {
-    private object MethodListener : DescriptorData("LocationHook.MethodListener")
-    private object MethodListenerWgs84 : DescriptorData("LocationHook.MethodListenerWgs84")
-    private object MethodDefaultManager : DescriptorData("LocationHook.MethodDefaultManager")
-    private object MethodSelectPoiMapOnClick : DescriptorData("LocationHook.MethodSelectPoiMapOnClick")
+    private object MethodListener : DexDescData("LocationHook.MethodListener")
+    private object MethodListenerWgs84 : DexDescData("LocationHook.MethodListenerWgs84")
+    private object MethodDefaultManager : DexDescData("LocationHook.MethodDefaultManager")
+    private object MethodSelectPoiMapOnClick : DexDescData("LocationHook.MethodSelectPoiMapOnClick")
     private object ValLatitude : DefaultData("LocationHook.ValLatitude", floatDefVal = LATITUDE_DEF_VAL)
     private object ValLongitude : DefaultData("LocationHook.ValLongitude", floatDefVal = LONGITUDE_DEF_VAL)
 
@@ -62,7 +58,7 @@ object LocationHook : SwitchHook("LocationHook"), IDexFind {
         layoutView.context.showDialog {
             title = funcName
             view = binding.root
-            positiveButton {
+            positiveButton("保存") {
                 ValLatitude.floatVal = binding.moduleDialogEdtLocationLatitude.text.toString().toFloat()
                 ValLongitude.floatVal = binding.moduleDialogEdtLocationLongitude.text.toString().toFloat()
             }
@@ -81,17 +77,17 @@ object LocationHook : SwitchHook("LocationHook"), IDexFind {
 
     @Suppress("DEPRECATION")
     override fun initOnce() {
-        RedirectUIClass.method {
+        RedirectUIClass.resolve().firstMethod {
             name = "onActivityResult"
-            param(IntType, IntType, IntentClass)
+            parameters(Int::class, Int::class, Intent::class)
         }.hook {
-            after {
+            afterIfEnabled {
                 val requestCode = args(0).cast<Int>()!!
                 val resultCode = args(1).cast<Int>()!!
                 if (requestCode == 6 && resultCode == Activity.RESULT_OK) {
                     val intent = args(2).cast<Intent>()!!
                     val locationIntent = intent.getParcelableExtra<Parcelable>("KLocationIntent")!!
-                    val locationDataStr = locationIntent::class.java.method { returnType(StringClass) }.get(locationIntent).string()
+                    val locationDataStr = locationIntent.asResolver().firstMethod { returnType = String::class }.invoke<String>()!!
                     val pattern = Regex("lat ([-+]?[0-9]*\\.?[0-9]+);lng ([-+]?[0-9]*\\.?[0-9]+);")
                     val match = pattern.find(locationDataStr)
                     if (match != null && match.groupValues.size == 3) {
@@ -109,13 +105,13 @@ object LocationHook : SwitchHook("LocationHook"), IDexFind {
                 hook {
                     beforeIfEnabled {
                         args(0).any()?.also { location ->
-                            location::class.java.apply {
-                                method { name = "getLatitude" }.hook {
+                            location.asResolver().apply {
+                                firstMethod { name = "getLatitude" }.hook {
                                     beforeIfEnabled {
                                         result = ValLatitude.floatVal.toDouble()
                                     }
                                 }
-                                method { name = "getLongitude" }.hook {
+                                firstMethod { name = "getLongitude" }.hook {
                                     beforeIfEnabled {
                                         result = ValLongitude.floatVal.toDouble()
                                     }
@@ -196,6 +192,7 @@ object LocationHook : SwitchHook("LocationHook"), IDexFind {
         }
         MethodSelectPoiMapOnClick.findDexClassMethod(dexKit) {
             onMethod {
+                searchPackages("com.tencent.mm.plugin.location.ui.impl")
                 matcher {
                     usingEqStrings("MicroMsg.MMPoiMapUI", "invalid lat lng")
                 }

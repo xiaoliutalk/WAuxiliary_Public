@@ -38,6 +38,9 @@
     <a href="https://github.com/HdShare/WAuxiliary_Public/releases/latest">
         <img src="https://img.shields.io/github/v/release/HdShare/WAuxiliary_Public?style=flat-square&label=Release&labelColor=28c445&color=c8c8c8" alt="release">
     </a>
+</p>
+
+<p align="center">
     <a href="https://t.me/Hd_WAuxiliary_CI">
         <img src="https://img.shields.io/static/v1?style=flat-square&label=Telegram&labelColor=01bfaf&message=Channel&color=099fdf" alt="Telegram">
     </a>
@@ -45,8 +48,6 @@
         <img src="https://img.shields.io/static/v1?style=flat-square&label=Telegram&labelColor=01bfaf&message=Group&color=099fdf" alt="Telegram">
     </a>
 </p>
-
----
 
 ## 说明:
 
@@ -57,28 +58,26 @@ WeChat Auxiliary
 - 如果某功能被大量运用于非法用途，那么该功能将会被移除
 - 鉴于项目的特殊性，开发团队可能随时**停止更新**或**删除项目**
 
----
-
 ## 问题:
 
 | Question | Answer                       |
 |----------|------------------------------|
-| 适配版本     | 理论适配 8.0.33~8.0.60 国内与PLAY版本 |
-
----
+| 适配版本     | 理论适配 8.0.44~8.0.65 国内与PLAY版本 |
 
 ## 致谢:
 
-| Name        | Link                                                      |
-|-------------|-----------------------------------------------------------|
-| YukiHookAPI | [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI) |
-| DexKit      | [DexKit](https://github.com/LuckyPray/DexKit)             |
-| QAuxiliary  | [QAuxiliary](https://github.com/cinit/QAuxiliary)         |
-| TimTool     | [TimTool](https://github.com/suzhelan/TimTool)            |
-| TSBattery   | [TSBattery](https://github.com/fankes/TSBattery)          |
-| Icon        | [MaiTungTM](https://github.com/Lagrio)                    |
-
----
+| Name          | Link                                                            |
+|---------------|-----------------------------------------------------------------|
+| HighCapable   | [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI)       |
+| HighCapable   | [KavaRef](https://github.com/HighCapable/KavaRef)               |
+| BetterAndroid | [BetterAndroid](https://github.com/BetterAndroid/BetterAndroid) |
+| BetterAndroid | [Hikage](https://github.com/BetterAndroid/Hikage)               |
+| LuckyPray     | [DexKit](https://github.com/LuckyPray/DexKit)                   |
+| cinit         | [QAuxiliary](https://github.com/cinit/QAuxiliary)               |
+| suzhelan      | [TimTool](https://github.com/suzhelan/TimTool)                  |
+| fankes        | [TSBattery](https://github.com/fankes/TSBattery)                |
+| KitsunePie    | [QQCleaner](https://github.com/KitsunePie/QQCleaner)            |
+| Icon          | [MaiTungTM](https://github.com/Lagrio)                          |
 
 ## 星图:
 

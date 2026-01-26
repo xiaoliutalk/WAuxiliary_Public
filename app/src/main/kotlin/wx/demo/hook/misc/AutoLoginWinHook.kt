@@ -1,13 +1,12 @@
 package wx.demo.hook.misc
 
 import android.app.Activity
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.method
-import com.highcapable.yukihookapi.hook.type.android.BundleClass
-import com.highcapable.yukihookapi.hook.type.android.ButtonClass
+import com.highcapable.kavaref.KavaRef.Companion.asResolver
+import com.highcapable.kavaref.KavaRef.Companion.resolve
 import me.hd.wauxv.data.config.DefaultData
 import me.hd.wauxv.databinding.ModuleDialogAutoLoginWinBinding
 import me.hd.wauxv.factory.showDialog
@@ -15,9 +14,7 @@ import me.hd.wauxv.hook.anno.HookAnno
 import me.hd.wauxv.hook.anno.ViewAnno
 import me.hd.wauxv.hook.base.SwitchHook
 import me.hd.wauxv.hook.factory.toAppClass
-import org.lsposed.lsparanoid.Obfuscate
 
-@Obfuscate
 @HookAnno
 @ViewAnno
 object AutoLoginWinHook : SwitchHook("AutoLoginWinHook") {
@@ -50,10 +47,10 @@ object AutoLoginWinHook : SwitchHook("AutoLoginWinHook") {
     }
 
     override fun initOnce() {
-        "com.tencent.mm.plugin.webwx.ui.ExtDeviceWXLoginUI".toAppClass().apply {
-            method {
+        "com.tencent.mm.plugin.webwx.ui.ExtDeviceWXLoginUI".toAppClass().resolve().apply {
+            firstMethod {
                 name = "onCreate"
-                param(BundleClass)
+                parameters(Bundle::class)
             }.hook {
                 beforeIfEnabled {
                     val activity = instance<Activity>()
@@ -64,14 +61,14 @@ object AutoLoginWinHook : SwitchHook("AutoLoginWinHook") {
                     activity.intent.putExtra("intent.key.function.control", functionControl)
                 }
             }
-            method {
+            firstMethod {
                 name = "initView"
-                emptyParam()
+                emptyParameters()
             }.hook {
                 afterIfEnabled {
-                    val button = field {
-                        type = ButtonClass
-                    }.get(instance).cast<Button>()!!
+                    val button = instance.asResolver().firstField {
+                        type = Button::class
+                    }.get<Button>()!!
                     button.callOnClick()
                 }
             }

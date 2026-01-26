@@ -6,27 +6,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import com.highcapable.yukihookapi.hook.factory.field
-import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.kavaref.KavaRef.Companion.asResolver
+import com.highcapable.kavaref.condition.type.Modifiers
+import com.highcapable.kavaref.extension.classOf
 import com.highcapable.yukihookapi.hook.param.HookParam
-import com.highcapable.yukihookapi.hook.type.java.IntType
 import me.hd.wauxv.data.config.DefaultData
-import me.hd.wauxv.data.config.DescriptorData
+import me.hd.wauxv.data.config.DexDescData
 import me.hd.wauxv.databinding.ModuleDialogEmojiGameBinding
 import me.hd.wauxv.factory.showDialog
 import me.hd.wauxv.hook.anno.HookAnno
 import me.hd.wauxv.hook.anno.ViewAnno
 import me.hd.wauxv.hook.base.SwitchHook
 import me.hd.wauxv.hook.core.dex.IDexFind
-import me.hd.wauxv.hook.factory.helper.utils.ActivityHelper
 import me.hd.wauxv.hook.factory.findDexClassMethod
+import me.hd.wauxv.hook.factory.helper.utils.ActivityHelper
 import me.hd.wauxv.hook.factory.toDexMethod
-import org.lsposed.lsparanoid.Obfuscate
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.MatchType
 import kotlin.random.Random
 
-@Obfuscate
 @HookAnno
 @ViewAnno
 object EmojiGameHook : SwitchHook("EmojiGameHook"), IDexFind {
@@ -45,8 +43,8 @@ object EmojiGameHook : SwitchHook("EmojiGameHook"), IDexFind {
         SIX(5, "六"),
     }
 
-    private object MethodRandom : DescriptorData("EmojiGameHook.MethodRandom")
-    private object MethodPanelClick : DescriptorData("EmojiGameHook.MethodPanelClick")
+    private object MethodRandom : DexDescData("EmojiGameHook.MethodRandom")
+    private object MethodPanelClick : DexDescData("EmojiGameHook.MethodPanelClick")
     private object ValMorra : DefaultData("EmojiGameHook.ValMorra", intDefVal = 0)
     private object ValDice : DefaultData("EmojiGameHook.ValDice", intDefVal = 0)
 
@@ -75,20 +73,18 @@ object EmojiGameHook : SwitchHook("EmojiGameHook"), IDexFind {
             title = funcName
             view = binding.root
             positiveButton("保存") {
-                ValMorra.intVal = when (binding.moduleDialogRgEmojiGameMorra.checkedRadioButtonId) {
-                    binding.moduleDialogRbEmojiGameMorra0.id -> MorraType.SCISSORS.index
-                    binding.moduleDialogRbEmojiGameMorra1.id -> MorraType.STONE.index
-                    binding.moduleDialogRbEmojiGameMorra2.id -> MorraType.PAPER.index
-                    else -> MorraType.SCISSORS.index
+                when (binding.moduleDialogRgEmojiGameMorra.checkedRadioButtonId) {
+                    binding.moduleDialogRbEmojiGameMorra0.id -> ValMorra.intVal = MorraType.SCISSORS.index
+                    binding.moduleDialogRbEmojiGameMorra1.id -> ValMorra.intVal = MorraType.STONE.index
+                    binding.moduleDialogRbEmojiGameMorra2.id -> ValMorra.intVal = MorraType.PAPER.index
                 }
-                ValDice.intVal = when (binding.moduleDialogRgEmojiGameDice.checkedRadioButtonId) {
-                    binding.moduleDialogRbEmojiGameDice1.id -> DiceFace.ONE.index
-                    binding.moduleDialogRbEmojiGameDice2.id -> DiceFace.TWO.index
-                    binding.moduleDialogRbEmojiGameDice3.id -> DiceFace.THREE.index
-                    binding.moduleDialogRbEmojiGameDice4.id -> DiceFace.FOUR.index
-                    binding.moduleDialogRbEmojiGameDice5.id -> DiceFace.FIVE.index
-                    binding.moduleDialogRbEmojiGameDice6.id -> DiceFace.SIX.index
-                    else -> DiceFace.ONE.index
+                when (binding.moduleDialogRgEmojiGameDice.checkedRadioButtonId) {
+                    binding.moduleDialogRbEmojiGameDice1.id -> ValDice.intVal = DiceFace.ONE.index
+                    binding.moduleDialogRbEmojiGameDice2.id -> ValDice.intVal = DiceFace.TWO.index
+                    binding.moduleDialogRbEmojiGameDice3.id -> ValDice.intVal = DiceFace.THREE.index
+                    binding.moduleDialogRbEmojiGameDice4.id -> ValDice.intVal = DiceFace.FOUR.index
+                    binding.moduleDialogRbEmojiGameDice5.id -> ValDice.intVal = DiceFace.FIVE.index
+                    binding.moduleDialogRbEmojiGameDice6.id -> ValDice.intVal = DiceFace.SIX.index
                 }
             }
             negativeButton()
@@ -171,10 +167,10 @@ object EmojiGameHook : SwitchHook("EmojiGameHook"), IDexFind {
             hook {
                 beforeIfEnabled {
                     val obj = args(3).any()!!
-                    val infoType = obj::class.java.field { modifiers { isFinal };type = IntType }.get(obj).int()
+                    val infoType = obj.asResolver().firstField { modifiers(Modifiers.FINAL);type = Int::class }.get<Int>()!!
                     if (infoType == 0) {
-                        val emojiInfo = obj::class.java.field { type = "com.tencent.mm.api.IEmojiInfo" }.get(obj).any()!!
-                        val emojiMd5 = emojiInfo::class.java.method { name = "getMd5" }.get(emojiInfo).string()
+                        val emojiInfo = obj.asResolver().firstField { type = "com.tencent.mm.api.IEmojiInfo" }.get()!!
+                        val emojiMd5 = emojiInfo.asResolver().firstMethod { name = "getMd5" }.invoke<String>()!!
                         when (emojiMd5) {
                             MD5_MORRA -> showSelectMorra(this)
                             MD5_DICE -> showSelectDice(this)
@@ -188,9 +184,10 @@ object EmojiGameHook : SwitchHook("EmojiGameHook"), IDexFind {
     override fun dexFind(dexKit: DexKitBridge) {
         MethodRandom.findDexClassMethod(dexKit) {
             onMethod {
+                searchPackages("com.tencent.mm.sdk.platformtools")
                 matcher {
-                    returnType(IntType)
-                    paramTypes(IntType, IntType)
+                    returnType(classOf<Int>())
+                    paramTypes(classOf<Int>(), classOf<Int>())
                     invokeMethods {
                         add { name = "currentTimeMillis" }
                         add { name = "nextInt" }
